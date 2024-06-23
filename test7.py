@@ -43,20 +43,24 @@ search_url = f"https://www.linkedin.com/search/results/companies/?{location_filt
 driver.get(search_url)
 time.sleep(5)  # Adjust based on page load time
 
-# Function to scroll and extract profile URLs
-def scroll_and_extract_profiles(driver):
-    profile_data = []  # Use a list to store profile names and URLs
+# Function to scroll and extract company URLs
+def scroll_and_extract_companies(driver):
+    company_data = []  # Use a list to store company names and URLs
     while True:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(5)  # Adjust based on page load time
         
-        profiles = driver.find_elements(By.XPATH, "//a[contains(@href, '/in/') and contains(@class, 'app-aware-link')]")
-        for profile in profiles:
-            profile_url = profile.get_attribute("href")
-            profile_name_element = profile.find_element(By.XPATH, ".//span[contains(@class, 'name')]")
-            profile_name = profile_name_element.text if profile_name_element else "Unknown"
-            if profile_url and "linkedin.com/in/" in profile_url:
-                profile_data.append([profile_name, profile_url])
+        companies = driver.find_elements(By.XPATH, "//a[contains(@href, '/company/') and contains(@class, 'app-aware-link')]")
+        for company in companies:
+            company_url = company.get_attribute("href")
+            try:
+                company_name_element = company.find_element(By.XPATH, ".//span[contains(@class, 'name')]")
+                company_name = company_name_element.text
+            except:
+                company_name = "Unknown"
+            
+            if company_url and "linkedin.com/company/" in company_url:
+                company_data.append([company_name, company_url])
         
         try:
             next_button = driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Next')]")
@@ -69,19 +73,21 @@ def scroll_and_extract_profiles(driver):
             print("Next button not found or not clickable:", e)
             break
 
-    return profile_data
+        return company_data
 
-# Scroll and extract profile data
-profile_data = scroll_and_extract_profiles(driver)
+# Scroll and extract company data
+company_data = scroll_and_extract_companies(driver)
 
-# Save profile data to a CSV file
-with open('profile_data.csv', 'w', newline='', encoding='utf-8') as file:
+# Save company data to a CSV file
+with open('company_data.csv', 'w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
-    writer.writerow(['Profile Name', 'Profile URL'])
-    writer.writerows(profile_data)
+    writer.writerow(['Company Name', 'Company URL'])
+    writer.writerows(company_data)
 
-print(f"Extracted {len(profile_data)} profiles.")
-print("Profile data saved to profile_data.csv")
+print(f"Extracted {len(company_data)} companies.")
+print("Company data saved to company_data.csv")
 
 # Close the driver
 driver.quit()
+
+
