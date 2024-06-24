@@ -43,6 +43,13 @@ search_url = f"https://www.linkedin.com/search/results/companies/?{location_filt
 driver.get(search_url)
 time.sleep(5)  # Adjust based on page load time
 
+# Function to extract company name from URL
+def extract_company_name_from_url(url):
+    # Assuming the company name is at the end of the URL before the last '/'
+    company_name = url.split("/")[-2].strip()
+    # You might need additional processing to clean up the company name
+    return company_name
+
 # Function to scroll and extract company URLs
 def scroll_and_extract_companies(driver):
     company_data = []  # Use a list to store company names and URLs
@@ -52,15 +59,21 @@ def scroll_and_extract_companies(driver):
         
         companies = driver.find_elements(By.XPATH, "//a[contains(@href, '/company/') and contains(@class, 'app-aware-link')]")
         for company in companies:
+            
             company_url = company.get_attribute("href")
             try:
-                company_name_element = company.find_element(By.XPATH, ".//span[contains(@class, 'name')]")
-                company_name = company_name_element.text
-            except:
+                # Extract company name from the URL
+                company_name = extract_company_name_from_url(company_url)
+                #print(f"Company name extracted from URL: {company_name}")  # Debugging line
+            except Exception as e:
                 company_name = "Unknown"
+                print(f"Error extracting company name from URL: {e}")  # Debugging line
+
             
             if company_url and "linkedin.com/company/" in company_url:
-                company_data.append([company_name, company_url])
+                # Check if the company data is already added to avoid duplicates
+                if [company_name, company_url] not in company_data:
+                    company_data.append([company_name, company_url])
         
         try:
             next_button = driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Next')]")
@@ -72,7 +85,7 @@ def scroll_and_extract_companies(driver):
         except Exception as e:
             print("Next button not found or not clickable:", e)
             break
-
+    
     return company_data
 
 # Scroll and extract company data
@@ -89,5 +102,4 @@ print("Company data saved to company_data.csv")
 
 # Close the driver
 driver.quit()
-
 
