@@ -73,7 +73,7 @@ def scroll_and_extract_companies(driver):
             print("Next button not found or not clickable:", e)
             break
 
-        return company_data
+    return company_data
 
 # Scroll and extract company data
 company_data = scroll_and_extract_companies(driver)
